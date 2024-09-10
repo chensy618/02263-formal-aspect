@@ -1,0 +1,7 @@
+scheme SET_EX = 
+    class 
+        type 
+            Record = Nat-set
+        value
+            Odd_number : Record = {1,3,5,7,9}
+end

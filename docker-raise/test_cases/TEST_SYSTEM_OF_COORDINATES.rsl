@@ -1,0 +1,17 @@
+SYSTEM_OF_COORDINATES
+
+scheme TEST_SYSTEM_OF_COORDINATES =
+  extend SYSTEM_OF_COORDINATES with
+  class
+    value 
+      pos1 : Position = (1.0,1.0),
+      pos2 : Position = (1.0,5.0),
+      pos3 : Position = (5.0,1.0)
+    test_case
+      [t1]  distance(origin, origin) = 0.0,
+      [t2]  distance(pos1, pos2) = 4.0,
+      [t3]  distance(pos1, pos3) = 4.0,
+      [t4]  distance(pos1, pos2)
+
+  end
+ 

@@ -1,0 +1,10 @@
+scheme SET_DATABASE =
+  class
+    type
+      Database = Person-set,  Person = Text
+    value
+      register : Person >< Database -> Database
+      register(p,db) is  db union {p}
+    test_case
+      [t1] register("Anne", {})  
+  end        

@@ -1,0 +1,473 @@
+-- taken from https://github.com/michelrandahl/RSL-examples/blob/master/rsl_examples.rsl
+
+/*
+various RSL implementation examples, all translate-able to SML
+*/
+	
+scheme examples = 
+  class 
+    type 
+      /*
+      sub-type (constrainted type), a list of exactly 8 natural numbers
+      */
+      PhoneNumber = {| phone_number : Nat-list :- len phone_number = 8 |}, 
+      -- variant type (union type)
+      Language == korean
+                | japanese
+                | danish
+                | french,
+      TranslationMap = (Language >< Text) -m-> Text,
+
+      -- shorthand record type
+      -- see shorthand_record test cases
+      City :: city_name       : Text
+              city_mayor      : Text <-> new_mayor -- special constructor, that can be used to create a new record from a previous one (see the testcase [shorthand_record2])
+              city_population : Real,
+
+      -- ordered tree example from the RSL book page -- 102
+      -- recursive data type
+      Tree == empty | node(left : Tree, elem : Nat, right : Tree), 
+      OrderedTree = {| t : Tree :- tree_is_ordered(t) |}
+
+    variable -- declaring mutable variables
+        some_var : Nat := 42,
+        counter : Nat := 0
+    	 
+    value 
+      /*
+      defining an empty set of natural numbers
+      */
+      empty_nat_set : Nat-set = {}, 
+
+      /*
+      using the Language type in a case expression
+      */ 
+      say_hello : Language -> Text
+      say_hello(l) is 
+        case l of
+          french -> "salut",
+          japanese -> "konnichiwa",
+          danish -> "hej",
+          korean -> "anyoung"
+        end, 
+
+      /*
+      reading a variable
+      */
+      read_some_var : Unit -> read some_var Nat
+      read_some_var () is some_var,
+
+      /*
+      writing to a variable
+      */
+      set_some_var : Nat -> write some_var Unit
+      set_some_var(n) is some_var := n,
+
+      /*
+      read and write variable, and sequencing statements together with ;
+      */
+      increment_counter : Unit -> read counter write counter Unit
+      increment_counter () is
+        counter := if counter = 10 then 0
+                   else counter + 1 end; -- sequencing statements together with ;
+        (), -- returning Unit
+
+      decrement_counter : Unit -> read counter write counter Unit
+      decrement_counter () is
+        counter := if counter > 0 then counter - 1
+                   else 0 end;
+        (),
+      	 
+      /*
+      function using the PhoneNumber sub-type 
+      */ 
+      dial_phone_num : PhoneNumber -> Text
+      dial_phone_num(phone_num) is "hello", 
+      	 
+      /*
+      a partial function. In contrast to total functions
+      it doesn't return a result for all possible input values
+      */ 
+      some_partial_function : Nat -~-> Nat
+      some_partial_function(n) is n + 42 pre n > 17, 
+      	 
+      /*
+      example of function overloading
+      (this scheme class contains two max functions)
+      */ 
+      max : Int >< Int -> Int
+      max(i1, i2) is
+        if i1 > i2 then i1
+        else i2 end, 
+      	 
+      /*
+      example of function overloading
+      (this scheme class contains two max functions)
+      */ 
+      max : Int-list -~-> Int
+      max(l) is 
+        if len l > 1 
+        then 
+          let
+            i1 = hd l,
+            i2 = hd (tl l),
+            rem = tl (tl l)
+          in 
+            if i1 > i2 then
+                max(<.i1.> ^ rem) 
+            else
+                max(<.i2.> ^ rem) 
+            end 
+          end 
+        else hd l 
+        end 
+      pre len l > 0, 
+
+      /*
+      function that adds some values to the map type datastructure
+      */
+      addTranslationToMap : TranslationMap >< Language >< Text >< Text -> TranslationMap
+      addTranslationToMap(tmap, lang, word_lang, word_eng) is
+        tmap !! [(lang, word_lang) +> word_eng],
+      	 
+      /*
+      a basic recursive function 
+      */ 
+      fibonacci : Nat -> Nat
+      fibonacci(n) is 
+        case n of
+          0 -> 1,
+          1 -> 1,
+          _ -> fibonacci(n - 1) + fibonacci(n - 2)
+        end, 
+      	 
+      /*
+      recursive function which zips two lists together to one list of tuples.
+      this recursive function has a function call to itself as last step in each
+      recursion, and thus it can be tail-call-optimized by the SML compiler.
+      https://en.wikipedia.org/wiki/Tail_call
+      */ 
+      zip1 : Nat-list >< Nat-list >< (Nat >< Nat)-list -> (Nat >< Nat)-list
+      zip1(l1, l2, result) is 
+        if len l1 > 0 /\ len l2 > 0 
+        then 
+          let 
+            h1 = hd l1, 
+            h2 = hd l2, 
+            t1 = tl l1, 
+            t2 = tl l2, 
+            result' = result ^ <.(h1, h2).> 
+          in 
+            zip1(t1, t2, result') 
+          end 
+        else result 
+        end, 
+      	 
+      /*
+      yet another recursive function that zip two lists together to one list of tuples.
+      this recursive function has a list concatenation as last step in each recursion
+      and thus it cannot be tail-call-optimized.
+      */ 
+      zip2 : Nat-list >< Nat-list -> (Nat >< Nat)-list
+      zip2(l1, l2) is 
+        if len l1 > 0 /\ len l2 > 0 
+        then 
+          let 
+            h1 = hd l1, h2 = hd l2, t1 = tl l1, t2 = tl l2 
+          in 
+            <.(h1, h2).> ^ zip2(t1, t2) 
+          end 
+        else <..> 
+        end, 
+      	 
+      /*
+      a higher-order function that maps a given function (Int -> Int)
+      over a list of values and returns a new list.
+      it is possible to declare functions anonymously and provide them as arguments
+      see the test_case examples.
+      */ 
+      map_fun : (Int -> Int) >< Int-list -> Int-list
+      map_fun(fun, xs) is <.fun(x) | x in xs.>, 
+      	 
+      /*
+      recursive function that returns the sum of a list of integers numbers
+      */ 
+      sum : Int-list -> Int
+      sum(xs) is 
+        if len xs > 0 then
+            (hd xs) + sum(tl xs)
+        else
+            0
+        end, 
+      	 
+      /*
+      defining a function which can be curried due to its type signature
+      Type -> Type -> Type
+      (see [curry_example]'s under the tests)
+      */ 
+      add_two_numbers : Int -> Int -> Int
+      add_two_numbers(x)(y) is x + y, 
+      	 
+      /*
+      another example of a function definition which can be curried
+      */ 
+      map_fun2 : (Int -> Int) -> Int-list -> Int-list
+      map_fun2(fun)(xs) is <.fun(x) | x in xs.>, 
+      	 
+      /*
+      currying the add_two_numbers function to produce a new function
+      */ 
+      add_forty_two : Int -> Int
+      add_forty_two(x) is add_two_numbers(42)(x), 
+      	 
+      /*
+      example of function composition.
+      (creating a new function by combining other functions)
+      in this case we use the add_two_numbers, apply one argument
+      to them and chain them together using the infix
+      function composition operator #
+      the resulting function can be understood as
+      f(x) = 13 + 42 + (-3 + x)
+      */ 
+      composed_fun1 : Int -> Int
+      composed_fun1(x) is 
+        (add_two_numbers(13) #
+         add_two_numbers(42) # 
+         add_two_numbers(-3))
+         (x), 
+      	
+      /*
+      yet another use case for function composition.
+      the resulting function can be understood as
+      f(xs) = sum(map_fun2(-\..., map_fun2(-\..., map_fun2(-\..., xs))))
+      */
+      composed_fun2 : Int-list -> Int
+      composed_fun2(xs) is 
+        (sum #
+         map_fun2(-\ x : Int :- x * 13) # 
+         map_fun2(-\ x : Int :- x - 5) #
+         map_fun2(-\ x : Int :- x * x))
+         (xs), 
+      	 
+      /*
+      example implementation from the RSL book page 102
+      */ 
+      tree_is_ordered : Tree -> Bool
+      tree_is_ordered(t) is 
+        case t of
+          empty -> true,
+          -- notice how t1,e and t2 are matched from node
+          -- and used directly inside the match case expression
+          node(t1, e, t2) -> 
+            (all e1 : Nat :- e1 isin extract_elems(t1) => e1 < e) /\ 
+            (all e2 : Nat :- e2 isin extract_elems(t2) => e < e2) /\ 
+            tree_is_ordered(t1) /\ tree_is_ordered(t2)
+        end, 
+      	 
+      /*
+      example implementation from the RSL book page 102
+      (my own interpertation)
+      */ 
+      extract_elems : Tree -> Nat-set
+      extract_elems(t) is 
+        case t of
+          empty -> {},
+          node(t1, e, t2) -> 
+            {e} union extract_elems(t1) union 
+            extract_elems(t2)
+        end
+
+    test_case 
+      [shorthand_record1]
+        let
+          -- using the implicit record constructor
+          cph = mk_City("Copenhagen", "Frank Jensen", 1.2)
+        in
+          -- extracting population count from the record
+          city_population(cph)
+        end,
+
+      [shorthand_record2]
+        let
+          -- using the implicit record constructor
+          cph = mk_City("Copenhagen", "Frank Jensen", 1.2)
+        in
+          -- use the special constructor to create new record from old one with a new mayor
+          new_mayor("John Doe", cph)
+        end,
+          
+      [dial_phone_test] dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8.>), 
+
+      [dial_phone_test2]
+        /*
+        this test will yield an error since the given
+        phone number doesn't obey the sub-type
+        */
+        dial_phone_num(<.1, 2, 3, 4, 5, 6, 7, 8, 9.>), 
+
+      [partial_fun_test]
+        /*
+        this test will yield an error since the precondition
+        of the function isnt met
+        */
+        some_partial_function(3), 
+
+      [partial_fun_test2] some_partial_function(18), 
+
+      [say_hello_example] say_hello(japanese), 
+
+      [some_list] <.1, 2, 3.>, 
+
+      [lenght_of_list] len <.1, 2, 3.>, 
+
+      [cardinality_of_set] card {1, 2, 3}, 
+
+      [some_other_list] <.1 .. 10.>, 
+
+      [some_list_comprehension] <.x | x in <.1 .. 10.> :- x \ 2 = 0.>, 
+
+      [some_set_comprehension] {x | x : Nat :- x isin {1 .. 10} /\ x \ 2 = 0}, 
+
+      [some_other_set_comprehension] {x + 1 | x : Nat :- x isin {0 .. 10} /\ x \ 2 = 0}, 
+
+      [lang_map]
+        let
+          m = [(japanese, "konnichiwa") +> "hi",
+               (danish, "hej") +> "hi",
+               (japanese, "arigato") +> "thanks"]
+        in
+          addTranslationToMap(m, japanese, "kawa", "river")
+        end,
+
+      [map_domain]
+        dom ["a" +> 1, "b" +> 1, "c" +> 2] = {"a","b","c"},
+
+      [map_range] rng ["a" +> 1, "b" +> 1, "c" +> 2] = {1,2},
+
+      [fibonacci_test] fibonacci(12), 
+
+      [let_expression]
+        /*
+        A let-expression.
+        The type checker can infer the types of the assignments
+        so you don't
+        need to specify the types explicitly.
+        All the defined assignments are immutable values
+        and can therefore not be mutated in the expression.
+        */
+        let 
+          some_list = <.1, 2, 3.>, 
+          head = hd some_list, 
+          tail = tl some_list 
+        in 
+          head = 1 /\ 
+          tail = 
+            <.2, 3.> --the return value of the let-expression
+        end, 
+
+      [if_expression]
+        /*
+        languages such as java uses if-statements which
+        doesn't return anything,
+        in RSL if-expressions are used, which returns
+        a value based on a condition.
+        Since if-expressions always return something,
+        they must have an else clause.
+        */
+        if true then 42 else 0 end, 
+
+      [lambda_expression]
+        /*
+        lambda functions can be declared using the following
+        syntax
+        -\ args : Type :- expression
+        usually they are used directly (anomously)
+        as arguments for higher order functions.
+        see for example [higher_order_function_test]
+        for a common use case
+        */
+        let
+            f = -\ x : Nat :- x + 3
+        in
+            f(17)
+        end, 
+
+      [concat_lists] <.0, 1.> ^ <.2, 3.>, 
+
+      [set_difference] {1, 2, 3, 4} \ {2, 4}, 
+
+      [set_union] {1, 2} union {3, 4}, 
+
+      [set_union2] let empty = empty_nat_set in empty union {35, 42} end, 
+
+      [list_to_set] elems <.1, 2, 3, 4, 5.>, 
+
+      [zip1_test] zip1(<.1, 2, 3.>, <.4, 5, 6.>, <..>), 
+
+      [zip2_test] zip2(<.1, 2, 3.>, <.4, 5, 6.>), 
+
+      [all_predicate] (all x : Nat :- x isin {1 .. 10} => x < 11), 
+
+      [exists_predicate] (exists x : Nat :- x isin {1 .. 5} /\ x > 4), 
+
+      [higher_order_function_test] map_fun(-\ x : Int :- x + 2, <.1, 2, 3.>), 
+
+      [higher_order_function_test2]
+        let 
+          l = <.1, 2, 3.>, 
+          l' = map_fun(-\ x : Int :- x + 2, l), 
+          l'' = map_fun(-\ x : Int :- x * 3, l') 
+        in 
+          sum(l'') 
+        end, 
+
+      [curry_example] add_forty_two(17), 
+
+      [curry_example2]
+        /*
+        apply currying and obtain a new function Int -> Int
+        informaly it might help to see it as
+        add_two_numbers : Int -> Int -> Int
+        becomes
+        add_two_numbers : (3) -> Int -> Int
+        */
+        let add_three = add_two_numbers(3) in add_three(42) end, 
+
+      [curry_example3]
+        /*
+        using a curried function as argument
+        for the higher-order map_fun function
+        */
+        let 
+          l = <.1, 2, 2, 4, 5, 6.>, 
+          add_three = add_two_numbers(3) 
+        in 
+          map_fun(add_three, l) 
+        end, 
+
+      [fun_composition_test1] composed_fun1(42), 
+
+      [fun_composition_test2] composed_fun2(<.12, -2, 32, 42.>), 
+
+      /*
+      tests of the ordered tree function from the book
+      */
+      [ordered_tree_test]
+        let 
+          tree = 
+            node(
+               node(empty, 2, empty), 5, 
+               node(empty, 9, empty)) 
+        in 
+          tree_is_ordered(tree) 
+        end, 
+      [ordered_tree_test2]
+        let 
+          tree = 
+            node(
+               node(empty, 7, empty), 5, 
+               node(empty, 9, empty)) 
+        in 
+          tree_is_ordered(tree) = false 
+        end
+  end 

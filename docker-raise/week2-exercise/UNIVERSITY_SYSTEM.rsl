@@ -1,0 +1,53 @@
+scheme 
+  UNIVERSITY_SYSTEM = 
+    class 
+      type 
+        Student,  
+        Course,  
+        Course_info = Course >< Student-set,  
+        University = 
+          {| (ss, cis) : Student-set >< Course_info-set :- is_wf(ss, cis) |}
+         
+      value 
+        is_wf : Student-set >< Course_info-set -> Bool
+        is_wf(ss, cis) is 
+          (
+            all (c, ss'), (c', ss'') : Course_info :- 
+              (c, ss') isin cis /\ (c', ss'') isin cis => (c = c' => ss' = ss'')
+          )  /\
+          (all (c, ss') : Course_info :- (c, ss') isin cis => ss' <<= ss ),  
+
+
+        students : University -> Student-set
+        students(ss, cis) is  ss,  
+
+        courses : University -> Course-set
+        courses(ss, cis) is 
+          { c | (c, ss') : Course_info :- (c, ss') isin cis},  
+
+
+        stud_of : Course >< University -~-> Student-set
+        stud_of(c, (ss, cis)) is 
+          { s | s : Student :- exists ss' : Student-set :- s isin ss' /\ (c, ss') isin cis } 
+          pre c isin courses(ss, cis),  
+
+        attending : Student >< University -~-> Course-set
+        attending(s, (ss, cis)) is 
+          { c | c : Course :- exists ss' : Student-set :- (c, ss') isin cis /\ s isin ss' } 
+          pre s isin students(ss, cis),  
+
+        new_stud : Student >< University -~-> University
+        new_stud(s, (ss, cis)) is (ss union {s}, cis) pre s ~isin students(ss, cis),  
+
+        drop_stud : Student >< University -~-> University
+        drop_stud(s, (ss, cis)) is 
+          (ss \ {s}, { (c, ss' \ {s}) | (c, ss') : Course_info :- (c, ss') isin cis }) 
+          pre s isin students(ss, cis),
+
+        sizes_ok : University -> Bool
+        sizes_ok(ss, cis) is 
+          (
+            all (c, ss') : Course_info :- 
+              (c, ss') isin cis => (card ss' <= 100 /\ card ss' >= 5)
+          )
+    end

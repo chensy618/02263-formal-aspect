@@ -1,0 +1,15 @@
+scheme COMPLEX_EX =
+    class 
+        type 
+            Complex = Real >< Real
+        value 
+            zero : Complex = (0.0,0.0),
+            c : Complex :- 
+                let (a,b) = c in a = b end,
+            add : Complex >< Complex -> Complex
+            add((a,b),(c,d)) is (a+c,b+d),
+            multi : Complex >< Complex -> Complex
+            multi((a,b),(c,d)) is (a*c-b*d,a*d+b*c),
+            f : Complex -> Complex
+            f((fc,fd)) is (fc+1.0,fd+1.0)
+end

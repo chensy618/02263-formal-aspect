@@ -1,0 +1,11 @@
+scheme SYSTEM_OF_COORDINATES =
+  class
+    type
+      Position = Real >< Real
+    value
+      origin : Position = (0.0,0.0),
+      distance : Position >< Position -> Real
+      distance((x1,y1),(x2,y2)) is 
+        ((x2-x1)**2.0 + (y2-y1)**2.0)**0.5
+  end
+      

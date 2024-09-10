@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  rsl:
+    build: .
+    command: tail -F /dev/null
+    volumes:
+      - .:/usr/src
