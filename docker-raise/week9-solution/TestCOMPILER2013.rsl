@@ -1,0 +1,45 @@
+COMPILER
+
+scheme TestCOMPILER2013 =
+extend COMPILER with 
+class
+  value 
+    x : Identifier = "x",
+    y : Identifier = "y",
+    p : Prog =
+          mk_Prog(mk_Seq(mk_Asgn(x, mk_Const(2)),
+                   mk_If(mk_Id(x), 
+                         mk_Asgn(y, mk_Plus(mk_Id(x), mk_Const(3))),
+                         mk_Asgn(y, mk_Plus(mk_Id(y), mk_Const(1))))))
+  test_case
+    [t1] comp_Prog(p) =
+           <.mk_Cnst(2),
+             mk_Store("x"),
+             mk_Pop(()),
+  
+             mk_Push("x"),
+ 
+             mk_Jumpfalse(8),
+             mk_Pop(()),
+
+             mk_Push("x"),
+             mk_Cnst(3),
+             mk_Add(()),
+             mk_Store("y"),
+             mk_Pop(()),
+
+             mk_Jump(7),
+             mk_Pop(()),
+
+             mk_Push("y"),
+             mk_Cnst(1),
+             mk_Add(()),
+             mk_Store("y"),
+             mk_Pop(()).>,
+ 
+    [t2] I(comp_Prog(p), 1, <..>)([x +> 0, y +> 1]) = ["x" +> 2, "y" +> 5],
+
+    [t3] m(p)([x +> 0, y +> 1]) = ["x" +> 2, "y" +> 5]
+
+    
+end

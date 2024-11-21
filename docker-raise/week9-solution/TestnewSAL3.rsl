@@ -1,0 +1,10 @@
+newSAL3
+
+scheme TestnewSAL3 =
+extend  newSAL3 with
+class
+  value e : Expr = mk_Let("x", mk_IntConst(5), mk_InfixExpr( mk_IntConst(2), plus, mk_Id("x")))
+  test_case 
+    [t1] is_wff(e)([]),
+    [t2] m(e)([]) = mk_Int(7)
+end

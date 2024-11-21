@@ -1,0 +1,24 @@
+scheme 
+  VEHICLE2 = 
+    class 
+      type 
+        Vehicle == 
+          Vehicle_from_Car(Vehicle_to_Car : Car) | 
+          Vehicle_from_Lorry(Vehicle_to_Lorry : Lorry),  
+        Car == mk_Car(curr_value : Nat, age : Year),  
+        Lorry == 
+          mk_Lorry(curr_value : Nat, age : Year, tonnage : Nat),  
+        Year
+         
+      value 
+        incr_age : Vehicle -> Vehicle
+        incr_age(v) is 
+          case v of 
+            Vehicle_from_Car(mk_Car(cv, a)) -> 
+              Vehicle_from_Car(mk_Car(cv, add_one(a))), 
+            Vehicle_from_Lorry(mk_Lorry(cv, a, t)) -> 
+              Vehicle_from_Lorry(mk_Lorry(cv, add_one(a), t)) 
+          end,  
+
+        add_one : Year -> Year 
+    end

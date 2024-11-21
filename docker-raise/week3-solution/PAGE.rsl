@@ -1,0 +1,51 @@
+scheme PAGE =
+  class
+    type 
+      Page = Line-list,
+      Line = Word-list,
+      Word,
+      Dict = Word-set
+     
+    value  
+      is_on : Word >< Page -> Bool
+      is_on(w,p) is
+        (exists i:Nat :- (i isin inds p) /\ (w isin elems p(i))),
+                
+      number_of : Word >< Page -> Nat
+      number_of(w,p) is
+        card{ (i,j) | i,j : Nat :- 
+              (i isin inds p) /\ (j isin inds p(i)) /\ (w = p(i)(j))
+            },
+             
+      spell_check : Page >< Dict -> Word-set
+      spell_check(p,d) is
+        { w | w : Word :- is_on(w,p) /\ w ~isin d},
+  
+        
+      --alternative definitions:
+      is_on2 : Word >< Page -> Bool
+      is_on2(w,p) is w isin d_elems(p),
+                
+      d_elems: Page -> Word-set
+      d_elems(p) is
+        case p of
+          <..> -> {},
+          <.l.> ^ pr -> (elems l) union (d_elems(pr))
+        end,
+ 
+      number_of2 : Word >< Page -> Nat
+      number_of2(w,p) is
+        case p of
+          <..> -> 0,
+          <.l.> ^ pr -> number_of3(w,l) + number_of2(w,pr)
+        end,       
+        
+      number_of3 : Word >< Line -> Nat
+      number_of3(w,l) is
+        case l of
+          <..> -> 0,
+          <.w1.> ^ lr -> (if w = w1 then 1 else 0 end) + number_of3(w,lr)
+        end
+       
+  end
+    

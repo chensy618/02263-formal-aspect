@@ -1,0 +1,50 @@
+scheme 
+  MARRIAGE_BUREAU = 
+    class 
+      type 
+        Woman,  
+        Man,  
+        Couple = Woman >< Man,  
+        Unmarried_Woman_File = Woman-set,  
+        Unmarried_Man_File = Man-set,  
+        Couple_File = Couple-set,  
+        Database' = 
+          Unmarried_Woman_File >< Unmarried_Man_File >< 
+            Couple_File,  
+        Database = {| db : Database' :- is_wff(db) |}
+         
+      value 
+        is_wff : Database' -> Bool
+        is_wff(wf, mf, cf) is 
+          (
+            all (w, m) : Couple :- 
+              (w, m) isin cf => 
+              w ~isin wf /\ 
+              m ~isin mf /\ 
+              (
+                all (w', m') : Couple :- 
+                  (w', m') isin cf /\ (w', m') ~= (w, m) => w' ~= w /\ m' ~= m
+              )
+          ),  
+
+        is_married : Woman >< Database -> Bool
+        is_married(w, (wf, mf, cf)) is (exists m : Man :- (w, m) isin cf),  
+
+        is_married : Man >< Database -> Bool
+        is_married(m, (wf, mf, cf)) is (exists w : Woman :- (w, m) isin cf),  
+
+        register_woman : Woman >< Database -~-> Database
+        register_woman(w, (wf, mf, cf)) is 
+          (wf union {w}, mf, cf) 
+          pre w ~isin wf /\ ~ is_married(w, (wf, mf, cf)),  
+
+        register_man : Man >< Database -~-> Database
+        register_man(m, (wf, mf, cf)) is 
+          (wf, mf union {m}, cf) 
+          pre m ~isin mf /\ ~ is_married(m, (wf, mf, cf)),  
+
+        marry : Woman >< Man >< Database -~-> Database
+        marry(w, m, (wf, mf, cf)) is 
+          (wf \ {w}, mf \ {m}, cf union {(w, m)}) 
+          pre w isin wf /\ m isin mf 
+    end

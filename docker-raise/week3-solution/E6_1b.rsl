@@ -1,0 +1,15 @@
+scheme E6_1b =
+class
+  type Elem 
+  value  
+    rev : Elem-list -> Elem-list
+    rev(l) is <.l(len l - i + 1) | i in <.1 .. len l.>.>, 
+
+    -- alternatively:
+    rev2 : Elem-list -> Elem-list
+    rev2(l) is  
+      case l of
+        <..> -> <..>,
+        <.i.>^lr -> rev(lr) ^ <.hd l.> 
+      end
+end

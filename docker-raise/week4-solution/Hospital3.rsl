@@ -1,0 +1,56 @@
+scheme 
+  Hospital3 = 
+    class 
+      type 
+        WardId,  
+        PersonNr,  
+        Record,  
+        Patient = PersonNr,  
+        Nurse = PersonNr,  
+        Doctor = PersonNr
+         
+      type 
+        Hospital = {| h : Hospital' :- is_wff(h) |},  
+        Hospital' = WardId -m-> WardInfo,  
+        WardInfo :: 
+          docs : Doctor-set  nurses : Nurse-set  patients : Patient -m-> Record
+         
+      value 
+        is_wff : Hospital' -> Bool
+        is_wff(h) is 
+          (
+            all w1, w2 : WardId :- 
+              {w1, w2} <<= dom h /\ w1 ~= w2 => 
+              let 
+                mk_WardInfo(ds1, ns1, ps1) = h(w1), 
+                mk_WardInfo(ds2, ns2, ps2) = h(w2) 
+              in 
+                (ds1 union ns1 union dom ps1) inter (ds2 union ns2 union dom ps2) = {} 
+              end
+          ) /\ 
+          (
+            all w : WardId :- 
+              w isin dom h => 
+              let mk_WardInfo(ds, ns, ps) = h(w) in 
+                ds inter ns = {} /\ ds inter dom ps = {} /\ ns inter dom ps = {} 
+              end
+          ),  
+
+        is_in : PersonNr >< Hospital -~-> Bool
+        is_in(pid, h) is (exists w : WardId :- w isin dom h /\ pid isin dom patients(h(w))),  
+
+        discharge : PersonNr >< Hospital -~-> Hospital
+        discharge(pid, h) is 
+          [ 
+            w +> 
+              let mk_WardInfo(ls, ss, ps) = h(w) in 
+                mk_WardInfo(ls, ss, ps \ {pid}) 
+              end 
+          | 
+            w : WardId :- w isin dom h 
+          ] 
+          pre is_in(pid, h),  
+
+        doctors : WardId >< Hospital -~-> Doctor-set
+        doctors(w, h) is docs(h(w)) pre w isin dom h 
+    end

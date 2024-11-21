@@ -1,0 +1,27 @@
+scheme 
+  DATABASE = 
+    class 
+      type Key,  Data
+         
+      variable database : Key -m-> Data
+         
+      value 
+        empty : Unit -> write database Unit,  
+        insert : Key >< Data -> write database Unit,  
+        remove : Key -> write database Unit,  
+        defined : Key -> read database Bool,  
+        lookup : Key -~-> read database Data
+         
+      axiom 
+        empty() post database = [],  
+
+        all k : Key, d : Data :- 
+          insert(k, d) post database = database` !! [k +> d],  
+
+        all k : Key :- remove(k) post database = database` \ {k},  
+
+        all k : Key :- defined(k) as b post b = (k isin dom database),  
+
+        all k : Key :- 
+          lookup(k) as d post d = database(k) pre defined(k) 
+    end

@@ -46,15 +46,15 @@ structure COMPLEX_EX =
     struct
         type Complex_ = RT_x_1.t;
         
-        fun f'521_ (fc'588_, fd'58B_) = (R_coverage.cancel(RT_Text.fromLit "./COMPLEX_eX.rsl", (14, 27)); (RT_Real.R_add (fc'588_, RT_Real.fromLit "1.0"), RT_Real.R_add (fd'58B_, RT_Real.fromLit "1.0")));
+        fun f'521_ (fc'588_, fd'58B_) = (R_coverage.cancel(RT_Text.fromLit "./COMPLEX_EX.rsl", (14, 27)); (RT_Real.R_add (fc'588_, RT_Real.fromLit "1.0"), RT_Real.R_add (fd'58B_, RT_Real.fromLit "1.0")));
         
         val zero'265_ = (RT_Real.fromLit "0.0", RT_Real.fromLit "0.0");
         
-        fun multi'459_ ((a'4C4_, b'4C6_), (c'4CA_, d'4CC_)) = (R_coverage.cancel(RT_Text.fromLit "./COMPLEX_eX.rsl", (12, 35)); (RT_Real.R_sub (RT_Real.R_mul (a'4C4_, c'4CA_), RT_Real.R_mul (b'4C6_, d'4CC_)), RT_Real.R_add (RT_Real.R_mul (a'4C4_, d'4CC_), RT_Real.R_mul (b'4C6_, c'4CA_))));
+        fun multi'459_ ((a'4C4_, b'4C6_), (c'4CA_, d'4CC_)) = (R_coverage.cancel(RT_Text.fromLit "./COMPLEX_EX.rsl", (12, 35)); (RT_Real.R_sub (RT_Real.R_mul (a'4C4_, c'4CA_), RT_Real.R_mul (b'4C6_, d'4CC_)), RT_Real.R_add (RT_Real.R_mul (a'4C4_, d'4CC_), RT_Real.R_mul (b'4C6_, c'4CA_))));
         
         ;
         
-        fun add'391_ ((a'3FA_, b'3FC_), (c'400_, d'402_)) = (R_coverage.cancel(RT_Text.fromLit "./COMPLEX_eX.rsl", (10, 33)); (RT_Real.R_add (a'3FA_, c'400_), RT_Real.R_add (b'3FC_, d'402_)));
+        fun add'391_ ((a'3FA_, b'3FC_), (c'400_, d'402_)) = (R_coverage.cancel(RT_Text.fromLit "./COMPLEX_EX.rsl", (10, 33)); (RT_Real.R_add (a'3FA_, c'400_), RT_Real.R_add (b'3FC_, d'402_)));
         
     end;
     
@@ -63,8 +63,8 @@ open COMPLEX_EX;
 RSL.print_load_errs();
 RSL.set_time();
 R_coverage.init();
-(R_coverage.mark(RT_Text.fromLit "./COMPLEX_eX.rsl", (10, 33), (10, 42));
-R_coverage.mark(RT_Text.fromLit "./COMPLEX_eX.rsl", (12, 35), (12, 52));
-R_coverage.mark(RT_Text.fromLit "./COMPLEX_eX.rsl", (14, 27), (15, 3)));
+(R_coverage.mark(RT_Text.fromLit "./COMPLEX_EX.rsl", (10, 33), (10, 42));
+R_coverage.mark(RT_Text.fromLit "./COMPLEX_EX.rsl", (12, 35), (12, 52));
+R_coverage.mark(RT_Text.fromLit "./COMPLEX_EX.rsl", (14, 27), (15, 3)));
 RSL.print_error_count();
 R_coverage.save_marked();

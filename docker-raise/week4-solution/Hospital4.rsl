@@ -1,0 +1,32 @@
+scheme 
+  Hospital4 = 
+    class 
+      type 
+        WardId,  
+        PersonNr,  
+        Record
+         
+      type   
+        Hospital = PersonNr -m-> PersonInfo,
+        PersonInfo :: ward : WardId kind : Kind,
+        Kind == doctor | nurse | patient(r : Record)
+         
+      value
+        is_in : PersonNr >< Hospital -~-> Bool
+        is_in(pid, h) is 
+          pid isin dom h /\ 
+          case kind(h(pid)) of
+            patient(_) -> true,
+            _ -> false 
+          end,  
+
+        discharge : PersonNr >< Hospital -~-> Hospital
+        discharge(pid, h) is 
+          h \ {pid}
+          pre is_in(pid, h),  
+
+        doctors : WardId >< Hospital -~-> PersonNr-set
+        doctors(w, h) is 
+          { pid | pid : PersonNr :- pid isin dom h /\ ward(h(pid)) = w /\ kind(h(pid)) = doctor } 
+          pre w isin { w' | w' : WardId :- (exists k : Kind :- mk_PersonInfo(w', k) isin rng h) }
+    end

@@ -1,0 +1,19 @@
+scheme 
+  VEHICLE1 = 
+    class 
+      type 
+        Vehicle = Car | Lorry,  
+        Car :: curr_value : Nat  age : Year,  
+        Lorry :: curr_value : Nat  age : Year  tonnage : Nat,  
+        Year
+         
+      value 
+        incr_age : Vehicle -> Vehicle
+        incr_age(v) is 
+          case v of 
+            mk_Car(cv, a) -> mk_Car(cv, add_one(a)), 
+            mk_Lorry(cv, a, t) -> mk_Lorry(cv, add_one(a), t) 
+          end,  
+
+        add_one : Year -> Year 
+    end

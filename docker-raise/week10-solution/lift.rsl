@@ -1,0 +1,62 @@
+scheme LIFT = 
+  class
+      
+      value 
+        max : Nat :- max > 1
+
+      type 
+        Floor = {| n : Nat :- n isin {1 .. max} |},  
+        Door_Position == open | closed,
+        Lift_Position' == 
+          at(fno : Floor) | between(fno1 : Floor, fno2 : Floor),  
+        Lift_Position = 
+          {| p : Lift_Position' :- case p of between(f1, f2) -> f2 = f1 + 1, _ -> true end |}
+         
+         
+      type State
+         
+      value 
+        /* observers */
+        door_position : Floor >< State -> Door_Position,  
+        lift_position : State -> Lift_Position
+         
+      value 
+        /* generators */
+        open_door : Floor >< State  -> State,
+        move_up :  State  -> State
+         
+      axiom 
+        /* observer-generator axioms */
+        [door_position_open_door]   
+          all f1, f2 : Floor,  `sigma : State :-
+           door_position(f2, open_door(f1, `sigma)) is 
+             if f1 = f2 then open else door_position(f2, `sigma) end,
+
+        [lift_position_open_door]
+          all f : Floor,  `sigma : State :-
+            lift_position(open_door(f, `sigma)) is lift_position(`sigma), 
+
+        
+        [door_position_move_up]   
+          all f : Floor,  `sigma : State :-
+            door_position(f, move_up(`sigma)) is door_position(f, `sigma),
+ 
+        [lift_position_move_up]
+          all `sigma : State :-
+            lift_position(move_up(`sigma)) is
+              case lift_position(`sigma) of 
+                at(f) -> if f < max then between(f, f + 1) else at(f) end, 
+                between(f1, f2) -> at(f2) 
+              end 
+         
+      value 
+        safe : State -> Bool
+        safe(`sigma) is 
+          (all f : Floor :- door_position(f, `sigma) = open =>
+             lift_position(`sigma) = at(f)),
+
+        safe_open_door : Floor >< State -> State 
+        safe_open_door(f, `sigma) is 
+          if safe(open_door(f, `sigma)) 
+             then open_door(f, `sigma) else `sigma end 
+  end

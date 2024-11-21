@@ -1,0 +1,23 @@
+scheme 
+  I_STACK2 = 
+    class 
+      type Elem
+         
+      variable st : Elem-list
+         
+      value 
+        empty : Unit -> write st Unit
+        empty() post st = <..>,  
+
+        push : Elem -> write st Unit
+        push(e) post st = <.e.> ^ st`,  
+
+        is_empty : Unit -> read st Bool
+        is_empty() as b post b = (st = <..>),  
+
+        top : Unit -~-> read st Elem
+        top() as e post e = hd st pre st ~= <..>,  
+
+        pop : Unit -~-> write st Unit
+        pop() post st = tl st` pre st ~= <..> 
+    end

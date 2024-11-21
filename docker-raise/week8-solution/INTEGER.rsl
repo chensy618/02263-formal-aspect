@@ -1,0 +1,1 @@
+object INTEGER : class type Elem = Int end

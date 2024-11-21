@@ -1,0 +1,13 @@
+scheme MARRIAGE_BUREAU =
+    class
+        type 
+            Woman,
+            Man, 
+            Database = (Woman-set >< Man-set >< (Woman >< Man)-set)
+            
+        value
+            -- Function to check if a woman is married
+            is_married_w : (Woman >< Database) -> Bool
+            is_married_w(w, (women, men, marriages)) is 
+                (w ~isin women) /\ (exists (w1,m1) : Woman >< Man :- w = w1 /\ (w1,m1) isin marriages)
+end

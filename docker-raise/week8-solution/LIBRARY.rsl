@@ -1,0 +1,45 @@
+scheme 
+  LIBRARY = 
+    class 
+      type 
+        Book,  
+        Person,  
+        Library1 :: 
+          books : Book-set  
+          borrowers : Person-set  
+          borrowed : Book -m-> Person,  
+        Library = {| b : Library1 :- is_wf(b) |}
+         
+      value 
+        is_wf : Library1 -> Bool
+        is_wf(b) is 
+          dom borrowed(b) <<= books(b) /\ 
+          rng borrowed(b) <<= borrowers(b)
+         
+      variable lib : Library
+         
+      value 
+        owns : Book -> read lib Bool
+        owns(b) is b isin books(lib),  
+
+        is_borrowed : Book -~-> read lib Bool
+        is_borrowed(b) is b isin dom borrowed(lib) pre owns(b),  
+
+        borrower : Person -> read lib Bool
+        borrower(p) is p isin borrowers(lib),  
+
+        borrow_book : Book >< Person -~-> write lib Unit
+        borrow_book(b, p) is 
+          lib := 
+            mk_Library1
+              (books(lib), borrowers(lib), borrowed(lib) union [b +> p]) 
+          pre owns(b) /\ ~ is_borrowed(b) /\ borrower(p),  
+
+        return_book : Book -~-> write lib Unit
+        return_book(b) 
+          post 
+            books(lib) = books(lib`) /\ 
+            borrowers(lib) = borrowers(lib`) /\ 
+            borrowed(lib) = borrowed(lib`) \ {b} 
+          pre owns(b) /\ is_borrowed(b) 
+    end

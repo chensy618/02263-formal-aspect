@@ -1,0 +1,21 @@
+scheme 
+  I_STACK3 = 
+    class 
+      type Elem
+         
+      value 
+        empty : Unit -> write any Unit,  
+        push : Elem -> write any Unit,  
+        is_empty : Unit -> read any Bool,  
+        top : Unit -~-> read any Elem,  
+        pop : Unit -~-> write any Unit
+         
+      axiom 
+        empty() ; is_empty() is empty() ; true,  
+
+        all e : Elem :- push(e) ; is_empty() is push(e) ; false,  
+
+        all e : Elem :- push(e) ; top() is push(e) ; e,  
+
+        all e : Elem :- push(e) ; pop() is skip 
+    end

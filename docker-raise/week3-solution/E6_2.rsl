@@ -1,0 +1,20 @@
+LIST_DATABASE
+scheme E6_2 =
+extend LIST_DATABASE with
+class
+ value
+    insert : Key >< Data >< Database -> Database
+    insert(k,d,db) is
+      <.r | r in db :- less_than(key_of(r),k).> ^
+      <.new_record(k,d).> ^
+      <.r | r in db :- less_than(k,key_of(r)).>, 
+
+    -- alternatively:
+    insert2 : Key >< Data >< Database -> Database
+    insert2(k,d,db) is
+      if db = <..> \/  less_than(k,key_of(hd db)) then <.new_record(k,d).> ^ db
+      else 
+        if key_of(hd db) = k then <.new_record(k,d).> ^ tl db
+        else <.hd db.> ^ insert(k,d,tl db) end
+      end
+end

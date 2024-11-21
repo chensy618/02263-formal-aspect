@@ -1,4 +1,4 @@
-scheme FUNCTIONS_EX = 
+scheme FUNCTIONS_EX= 
     class
         type 
             number = Int
@@ -8,6 +8,6 @@ scheme FUNCTIONS_EX =
             max_implicit : number >< number -> number
             max_implicit(n1,n2) as n2 post n1 < n2, 
             max_axiom : number >< number -> number
-            axiom all n1,n2 : number :- max_axiom(n1,n2) = (if n1 > n2 then n1 else n2 end)
-            -- -\ (x:Int, y:Int) :- if x > y then x else y end
+            axiom all n1,n2 : number :- max_axiom(n1,n2) = (if n1 > n2 then n1 else n2 end),
+             -\ (x:Int, y:Int) :- if x > y then x else y end
 end

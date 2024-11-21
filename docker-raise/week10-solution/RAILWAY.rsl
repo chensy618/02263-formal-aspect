@@ -1,0 +1,81 @@
+scheme 
+  RAILWAY = 
+    class 
+      type 
+        TrainId,  
+        SectionNr = {| n : Nat :- n <= max |},  
+        Position' == 
+          single(snr : SectionNr) | double(snr1 : SectionNr, snr2 : SectionNr),  
+        Position = 
+          {| p : Position' :- case p of double(s1, s2) -> s2 = s1 + 1, _ -> true end |},  
+        Direction == increasing | decreasing
+         
+      value 
+        max : Nat
+         
+      type State
+         
+      value 
+        /* observere */
+        position : State >< TrainId -> Position,  
+        direction : State >< TrainId -> Direction
+         
+      value 
+        /* afledt observer */
+        safe : State -> Bool
+        safe(`sigma) is 
+          (all t1, t2 : TrainId :- t1 ~= t2 => sections(`sigma, t1) inter sections(`sigma, t2) = {}),  
+
+        sections : State >< TrainId -> SectionNr-set
+        sections(`sigma, t) is 
+          case position(`sigma, t) of single(s) -> {s}, double(s1, s2) -> {s1, s2} end
+         
+      value 
+        /* generatorer */
+        move : State >< TrainId -~-> State,  
+        reverse : State >< TrainId -> State
+         
+      axiom 
+        /* observer-generator aksiomer */
+        [position_move] 
+          all `sigma : State, t, t' : TrainId :- 
+            position(move(`sigma, t), t') is 
+              if t = t' then 
+                case direction(`sigma, t) of 
+                  increasing -> 
+                    case position(`sigma, t) of 
+                      single(s) -> if s < max then double(s, s + 1) else single(s) end, 
+                      double(s1, s2) -> single(s2) 
+                    end, 
+                  decreasing -> 
+                    case position(`sigma, t) of 
+                      single(s) -> if s > 0 then double(s - 1, s) else single(s) end, 
+                      double(s1, s2) -> single(s1) 
+                    end 
+                end 
+              else 
+                position(`sigma, t') 
+              end 
+              pre safe(`sigma),  
+
+        [direction_move] 
+          all `sigma : State, t, t' : TrainId :- direction(move(`sigma, t), t') is direction(`sigma, t'),  
+
+        [position_reverse] 
+          all `sigma : State, t, t' : TrainId :- position(reverse(`sigma, t), t') is position(`sigma, t'),  
+
+        [direction_reverse] 
+          all `sigma : State, t, t' : TrainId :- 
+            direction(reverse(`sigma, t), t') is 
+              if t = t' then 
+                case direction(`sigma, t) of increasing -> decreasing, decreasing -> increasing end 
+              else 
+                direction(`sigma, t') 
+              end
+         
+      value 
+        safe_move : State >< TrainId -~-> State  
+        safe_move(`sigma, t) is 
+          if safe(move(`sigma, t)) then move(`sigma, t) else `sigma end 
+          pre safe(`sigma) 
+    end

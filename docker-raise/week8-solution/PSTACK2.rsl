@@ -1,0 +1,22 @@
+ELEMENT
+
+scheme 
+  PSTACK2(E : ELEMENT) = 
+    class 
+      type Stack = E.Elem-list
+         
+      value 
+        empty : Stack = <..>,  
+
+        push : E.Elem >< Stack -> Stack
+        push(e, st) is <.e.> ^ st,  
+
+        top : Stack -~-> E.Elem
+        top(st) is hd st pre st ~= <..>,  
+
+        pop : Stack -~-> Stack
+        pop(st) is tl st pre st ~= <..>,  
+
+        is_empty : Stack -> Bool
+        is_empty(st) is st = <..> 
+    end

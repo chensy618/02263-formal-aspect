@@ -1,0 +1,44 @@
+scheme 
+  Hospital = 
+    class 
+      type 
+        WardId,  
+        PersonNr,  
+        Record,  
+        Patient = PersonNr,  
+        Nurse = PersonNr,  
+        Doctor = PersonNr
+         
+      type 
+        Hospital = {| h : Hospital' :- is_wff(h) |},  
+        Hospital' :: 
+          doctors : Doctor -m-> WardId  
+          nurses : Nurse -m-> WardId  
+          patients : Patient -m-> WardId >< Record  
+          wards : WardId-set
+         
+      value 
+        is_wff : Hospital' -> Bool
+        is_wff(h) is 
+          let mk_Hospital'(dm, nm, pm, ws) = h in 
+            dom dm inter dom nm = {} /\ 
+            dom dm inter dom pm = {} /\ 
+            dom pm inter dom nm = {} /\ 
+            rng dm union rng nm union 
+            { w | w : WardId :- exists r : Record :- (w, r) isin rng pm} <<= 
+            ws
+          end,  
+
+        is_in : PersonNr >< Hospital -> Bool
+        is_in(pid, h) is pid isin dom patients(h),  
+
+        discharge : PersonNr >< Hospital -~-> Hospital
+        discharge(pid, h) is 
+          mk_Hospital'(doctors(h), nurses(h), patients(h) \ {pid}, wards(h)) 
+          pre is_in(pid, h),  
+
+        doctors : WardId >< Hospital -~-> Doctor-set
+        doctors(w, h) is 
+          { d | d : Doctor :- d isin dom doctors(h) /\ doctors(h)(d) = w } 
+          pre w isin wards(h) 
+    end

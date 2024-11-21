@@ -1,0 +1,17 @@
+scheme THEATRE =
+  class
+    type 
+      Database = Performance -m-> Reservations,
+      Reservations = Seat -m-> Status,
+      Status == free | reserved_by(s_p : Person),
+      Performance, Person, Seat
+
+    value 
+      free_seats : Performance >< Database -~-> Seat-set
+      free_seats(p, t) is { s | s : Seat :- s isin dom t(p) /\ t(p)(s) = free }      pre p isin dom t,
+
+      mk_reservation : Person >< Seat >< Performance >< Database -~-> Database
+      mk_reservation(id, s, p, t) is  t !! [p +> t(p) !! [s +> reserved_by(id)]]   
+        pre p isin dom t /\ s isin free_seats(p, t)
+   end
+

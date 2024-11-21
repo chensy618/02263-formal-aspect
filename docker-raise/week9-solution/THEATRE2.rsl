@@ -1,0 +1,21 @@
+scheme THEATRE2 =
+  class
+    type 
+      Database = {| t : Database' :- is_wff(t) |}, 
+      Database' = Seat-set >< (Performance -m-> (Seat -m-> Person)),
+      Performance, Person, Seat
+
+    value 
+      is_wff : Database' -> Bool
+      is_wff(ss, t) is 
+        (all p : Performance :- p isin dom t => dom t(p) <<= ss), 
+
+      free_seats : Performance >< Database -~-> Seat-set
+      free_seats(p, (ss,t)) is ss \ dom t(p) 
+      pre p isin dom t,
+
+      mk_reservation : Person >< Seat >< Performance >< Database -~-> Database 
+      mk_reservation(id, s, p, (ss,t)) is  
+        (ss, t !! [p +> t(p) union [s +> id]])   
+        pre  p isin dom t /\ s isin free_seats(p, (ss, t))
+   end

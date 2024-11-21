@@ -1,0 +1,25 @@
+scheme 
+  ORIENTATION = 
+    class 
+      type Orientation == north | south | east | west
+         
+      value 
+        turnleft : Orientation -> Orientation,  
+        turnright : Orientation -> Orientation,  
+        opposite : Orientation -> Orientation
+         
+      axiom 
+        [turnleft_north] turnleft(north) is west,  
+
+        [turnleft_south] turnleft(south) is east,  
+
+        [turnleft_east] turnleft(east) is north,  
+
+        [turnleft_west] turnleft(west) is south,  
+
+        [turnright_turnleft] 
+          all d : Orientation :- turnright(turnleft(d)) is d,  
+
+        [opposite_ax] 
+          all d : Orientation :- opposite(d) is turnleft(turnleft(d)) 
+    end

@@ -1,0 +1,55 @@
+scheme 
+  DIGITAL_PICT = 
+    class 
+      type 
+        Colour,  
+        Colour2 == black | white,  
+        Colour3 = Intensity,  
+        Colour4 :: red : Intensity  green : Intensity  blue : Intensity,  
+        Intensity = {| n : Nat :- n <= 255 |}
+         
+      value 
+        n : Nat :- n >= 1,  
+        m : Nat :- m >= 1
+         
+      type 
+        Col = {| j : Int :- j >= 1 /\ j <= n |},  
+        Row = {| i : Int :- i >= 1 /\ i <= m |},  
+        Point = Row >< Col
+         
+      type Picture = {| b : Point -m-> Colour :- is_total(b) |}
+         
+      value 
+        is_total : (Point -m-> Colour) -> Bool
+        is_total(b) is (all p : Point :- p isin dom b)
+         
+      value 
+        colour_of : Point >< Picture -> Colour
+        colour_of(p, b) is b(p),  
+
+        one_colour : Picture -> Bool
+        one_colour(b) is card rng b = 1,  
+
+        vertical_stripe : Picture -> Bool
+        vertical_stripe(b) is 
+          (
+            exists j : Col, f : Colour :- 
+              (
+                all i : Row :- 
+                  colour_of((i, j), b) = f /\ 
+                  (all j' : Col :- (j' = j - 1 \/ j' = j + 1) => colour_of((i, j'), b) ~= f)
+              )
+          )
+         
+      value 
+        + : Colour >< Colour -> Colour,  
+        + : Picture >< Picture -> Picture
+         
+      axiom 
+        all p : Point, b1, b2 : Picture :- 
+          colour_of(p, b1 + b2) is colour_of(p, b1) + colour_of(p, b2)
+         
+      axiom 
+        all b1, b2 : Picture :- 
+          b1 + b2 = [ p +> colour_of(p, b1) + colour_of(p, b2) | p : Point ] 
+    end

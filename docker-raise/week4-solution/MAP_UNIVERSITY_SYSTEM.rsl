@@ -1,0 +1,44 @@
+scheme 
+  MAP_UNIVERSITY_SYSTEM = 
+    class 
+      type 
+        Student,  
+        Course,  
+        Course_infos = Course -m-> Student-set,  
+        University =  {| (ss, cis) : Student-set >< Course_infos :- is_wf(ss, cis) |}
+                  
+      value 
+        is_wf : Student-set >< Course_infos -> Bool
+        is_wf(ss, cis) is 
+           (all ss' : Student-set :- ss' isin rng cis => ss' <<= ss ),  
+
+        students : University -> Student-set
+        students(ss, cis) is ss,  
+
+        courses : University -> Course-set
+        courses(ss, cis) is dom cis,  
+
+        stud_of : Course >< University -~-> Student-set
+        stud_of(c, (ss, cis)) is cis(c) pre  c isin courses(ss, cis),  
+
+        attending : Student >< University -~-> Course-set
+        attending(s, (ss, cis)) is 
+          { c | c : Course :- c isin dom cis /\ s isin cis(c) } 
+          pre s isin students(ss, cis),  
+
+        new_stud : Student >< University -~-> University
+        new_stud(s, (ss, cis)) is (ss union {s}, cis) pre s ~isin students(ss, cis),  
+
+        drop_stud : Student >< University -~-> University
+        drop_stud(s, (ss, cis)) is 
+          (ss \ {s}, [ c +> cis(c) \ {s} | c : Course :- c isin dom cis ]) 
+          pre s isin students(ss, cis),
+ 
+        sizes_ok : University -> Bool
+        sizes_ok(ss, cis) is 
+          (
+            all c : Course :- 
+              c isin dom cis => (card cis(c) <= 100 /\ card cis(c) >= 5)
+          )  
+
+    end

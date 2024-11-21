@@ -1,0 +1,23 @@
+ELEMENT
+
+scheme 
+  STACK_STACK2(E : ELEMENT) = 
+    class 
+      object 
+        S : 
+          class 
+            type Stack == empty | push(top : E.Elem, pop : Stack)
+               
+            value 
+              is_empty : Stack -> Bool
+              is_empty(st) is st = empty 
+          end
+         
+      type 
+        Stack_of_stacks == 
+          empty | push(top : S.Stack, pop : Stack_of_stacks)
+         
+      value 
+        is_empty : Stack_of_stacks -> Bool
+        is_empty(st) is st = empty 
+    end

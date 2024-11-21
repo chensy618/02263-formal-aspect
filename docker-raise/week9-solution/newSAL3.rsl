@@ -1,0 +1,138 @@
+/* translatable version */
+scheme 
+  newSAL3 = 
+    class 
+      /* Abstract syntax */
+      type 
+        Expr == 
+          mk_IntConst(i : Int) | 
+          mk_BoolConst(b : Bool) |
+          mk_InfixExpr(l : Expr,  infixop : InfixOp,  r : Expr) | 
+          mk_PrefixExpr(prefixop : PrefixOp,  ex : Expr) | 
+          mk_Id(ide : Identifier) | 
+          mk_Let(lid : Identifier,  fst : Expr,  snd : Expr),  
+        InfixOp == plus | minus | int_eq | and | or | bool_eq,  
+        PrefixOp == minus | not,  
+        Identifier = Text
+         
+     /* Static semantics */
+     type 
+        Tp == integer | boolean,  
+        TpDict = Identifier -m-> Tp
+         
+      value 
+        type_of : Expr -> TpDict -~-> Tp
+        type_of(e)(td) is 
+          case e of 
+            mk_IntConst(_) -> integer, 
+            mk_BoolConst(_) -> boolean, 
+            mk_InfixExpr(_, op, _) -> 
+              case op of 
+                plus -> integer, 
+                minus -> integer, 
+                int_eq -> boolean, 
+                and -> boolean, 
+                or -> boolean, 
+                bool_eq -> boolean 
+              end, 
+            mk_PrefixExpr(op, _) -> 
+              case op of minus -> integer, not -> boolean end, 
+            mk_Id(id) -> td(id), 
+            mk_Let(id, e1, e2) -> 
+              type_of(e2)(td !! [id +> type_of(e1)(td)]) 
+          end 
+          pre is_wff(e)(td),  
+
+        is_wff : Expr -> TpDict -> Bool
+        is_wff(e)(td) is 
+          case e of 
+            mk_IntConst(_) -> true, 
+            mk_BoolConst(_) -> true, 
+            mk_InfixExpr(e1, op, e2) -> 
+              is_wff(e1)(td) /\ 
+              is_wff(e2)(td) /\ 
+              let t1 = type_of(e1)(td), t2 = type_of(e2)(td) in 
+                case op of 
+                  plus -> (t1, t2) = (integer, integer), 
+                  minus -> (t1, t2) = (integer, integer), 
+                  int_eq -> (t1, t2) = (integer, integer), 
+                  and -> (t1, t2) = (boolean, boolean), 
+                  or -> (t1, t2) = (boolean, boolean), 
+                  bool_eq -> (t1, t2) = (boolean, boolean) 
+                end 
+              end, 
+            mk_PrefixExpr(op, e1) -> 
+              is_wff(e1)(td) /\ 
+              let t = type_of(e1)(td) in 
+                case op of minus -> t = integer, not -> t = boolean end 
+              end, 
+            mk_Id(id) -> id isin dom td, 
+            mk_Let(id, e1, e2) -> 
+              is_wff(e1)(td) /\ is_wff(e2)(td !! [id +> type_of(e1)(td)]) 
+          end
+         
+      /* Semantic domain and functions */
+      type 
+        Env = Identifier -m-> Val,  
+        Val == mk_Int(intg : Int) | mk_Bool(bool : Bool)   
+         
+      value 
+        add : Val >< Val -~-> Val
+        add(v1, v2) is mk_Int(intg(v1) + intg(v2)),
+
+        sub : Val >< Val -~-> Val
+        sub(v1, v2) is mk_Int(intg(v1) - intg(v2)),        
+
+        int_eq : Val >< Val -~-> Val          
+        int_eq(v1, v2) is mk_Bool(intg(v1) = intg(v2)),  
+  
+        and : Val >< Val -~-> Val  
+        and(v1, v2) is mk_Bool(bool(v1) /\ bool(v2)),  
+
+        or : Val >< Val -~-> Val  
+        or(v1, v2) is mk_Bool(bool(v1) \/ bool(v2)),  
+
+        bool_eq : Val >< Val -~-> Val 
+        bool_eq(v1, v2) is mk_Bool(bool(v1) = bool(v2)),  
+
+        minus : Val -~-> Val
+        minus(v) is mk_Int(0 - intg(v)),
+
+        not : Val -~-> Val
+        not(v) is mk_Bool(~ bool(v)) 
+ 
+
+  
+         
+      /* Semantic meaning functions */
+      value 
+        m : Expr -> Env -~-> Val
+        m(e)(`rho) is 
+          case e of 
+            mk_IntConst(i) -> mk_Int(i), 
+            mk_BoolConst(b) -> mk_Bool(b), 
+            mk_InfixExpr(e1, op, e2) -> 
+              case op of 
+                plus -> add(m(e1)(`rho), m(e2)(`rho)), 
+                minus -> sub(m(e1)(`rho), m(e2)(`rho)), 
+                int_eq -> int_eq(m(e1)(`rho), m(e2)(`rho)), 
+                and -> and(m(e1)(`rho), m(e2)(`rho)), 
+                or -> or(m(e1)(`rho), m(e2)(`rho)), 
+                bool_eq -> bool_eq(m(e1)(`rho), m(e2)(`rho)) 
+              end, 
+            mk_PrefixExpr(op, e1) -> 
+              case op of 
+                minus -> minus(m(e1)(`rho)), not -> not(m(e1)(`rho)) 
+              end, 
+            mk_Id(id) -> `rho(id), 
+            mk_Let(id, e1, e2) -> m(e2)(`rho !! [id +> m(e1)(`rho)]) 
+          end 
+          pre 
+            is_wff
+              (e)
+              ([ id +> type_of_val(`rho(id)) | id : Identifier :- id isin dom `rho ]),  
+
+        type_of_val : Val -> Tp
+        type_of_val(c) is 
+          case c of mk_Int(_) -> integer, _ -> boolean end 
+    end

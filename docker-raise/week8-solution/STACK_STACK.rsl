@@ -1,0 +1,7 @@
+ELEMENT, PSTACK1
+
+scheme 
+  STACK_STACK(E : ELEMENT) = 
+    extend class object S : PSTACK1(E) end with 
+      use Stack_of_stacks for Stack in 
+        PSTACK1(S{Stack for Elem})
